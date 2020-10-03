@@ -2,13 +2,14 @@
 
 Based on Openlayers@5.3.3. Optimize 'Overlay' performance, inspired by a openlayers issue.
 
-On my computer(cpu:inter 8250u,16G),the test results are show as follow:
+On my computer(cpu:intel 8250u,16G,integrated graphics),the test results are show as follows:
 
-The result of adding 200 points using Openlayers Overlay.
+The result of adding 200 points using Openlayers Overlay.The FPS is on a low level.
 
 ![](.README_images/28e4f838.png)
 
-The result of add 200 and 800 points using FastOverlay.
+The result of add 200 and 800 points using FastOverlay.The FPS is on a high level.
+This brings about twice performance improvement.
 
 ![](.README_images/8508c702.png)
 
