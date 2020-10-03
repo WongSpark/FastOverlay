@@ -44,7 +44,7 @@ export default {
 
     /** @type {HTMLElement} */
     const tb = document.getElementById('number-of-overlays');
-    tb.value = 200;
+    tb.value = 800;
 
     function createOverlays(maxOverlays) {
       const POSITIONING = [
