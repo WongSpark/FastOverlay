@@ -1,5 +1,7 @@
 # fast-overlay
 
+Based on Openlayers@5.3.3. Optimize 'Overlay' performance, inspired by a openlayers issue.
+
 ## Project setup
 ```
 npm install

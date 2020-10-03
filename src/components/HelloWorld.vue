@@ -1,59 +1,98 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-unit-mocha" target="_blank" rel="noopener">unit-mocha</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div id="container">
+    <div id="map"></div>
+    <form>
+      <label for="number-of-overlays">Number of overlays</label>
+      <input id="number-of-overlays" type="number">
+    </form>
   </div>
 </template>
 
 <script>
+import 'ol/ol.css';
+import Map from 'ol/Map';
+// import Overlay from 'ol/Overlay';
+import View from 'ol/View';
+import TileLayer from 'ol/layer/Tile';
+import { fromLonLat } from 'ol/proj';
+import OSM from 'ol/source/OSM';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
+import Overlay from '../FastOverlay';
+
 export default {
   name: 'HelloWorld',
-  props: {
-    msg: String,
+  mounted() {
+    const layer = new TileLayer({
+      source: new OSM(),
+    });
+
+    const map = new Map({
+      layers: [layer],
+      target: 'map',
+      view: new View({
+        center: [0, 0],
+        zoom: 3,
+      }),
+    });
+
+    const pointSource = new VectorSource({});
+    const pointLayer = new VectorLayer({ source: pointSource });
+    map.addLayer(pointLayer);
+
+    /** @type {HTMLElement} */
+    const tb = document.getElementById('number-of-overlays');
+    tb.value = 200;
+
+    function createOverlays(maxOverlays) {
+      const POSITIONING = [
+        'bottom-left',
+        'bottom-center',
+        'bottom-right',
+        'center-left',
+        'center-center',
+        'center-right',
+        'top-left',
+        'top-center',
+        'top-right',
+      ];
+
+      map.getOverlays().clear();
+      pointSource.clear();
+      const features = [];
+      const perLine = Math.floor(Math.sqrt(maxOverlays));
+
+      for (let i = 0; i < maxOverlays; i += 1) {
+        const ele = document.createElement('div');
+        ele.className = 'marker';
+        ele.innerText = `${i}`;
+        const p = [(Math.floor(i / perLine) / perLine)
+        * 270 - 135, ((i % perLine) / perLine) * 135 - 67.5];
+        // console.log(i, i / MAX_MARKERS);
+        const overlay = new Overlay({
+          position: fromLonLat(p),
+          element: ele,
+          positioning: POSITIONING[i % POSITIONING.length],
+          stopEvent: false,
+        });
+        map.addOverlay(overlay);
+        features.push(new Feature(new Point(fromLonLat(p))));
+      }
+      pointSource.addFeatures(features);
+    }
+
+    tb.addEventListener('change', () => createOverlays(Number(tb.value)));
+    createOverlays(Number(tb.value));
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
+  #map {
+    height: 700px;
+    width: 100%;
+  }
 </style>
